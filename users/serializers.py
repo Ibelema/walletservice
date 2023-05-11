@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import CustomUser
-
+from .models import CustomUser, Wallet
+from rest_framework.authtoken.models import Token
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -8,8 +8,16 @@ class UserSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.create(email=validated_data['email'])
         user.set_password(validated_data['password'])
         user.save()
+
+        Token.objects.create(user=user)
         return user
 
     class Meta:
         model = CustomUser
         fields = ['email', 'password']
+
+class WalletSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Wallet
+        fields = ['balance', 'currency', 'wallet_id']

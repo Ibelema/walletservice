@@ -18,8 +18,14 @@ class CustomUser(AbstractUser):
         return self.email
 
 class Wallet(models.Model):
+    CURRENCY_CHOICES = [
+        ('ngn', 'NGN'),
+        ('eur', 'EUR'),
+        ('usd', 'USD')
+    ]
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    currency = MoneyField(max_digits=13, decimal_places=2, default_currency='NGN')
+    wallet_id = models.AutoField(primary_key=True)
+    currency = models.CharField(max_length=4, choices=CURRENCY_CHOICES, default='NGN')
     created_at = models.DateTimeField(auto_now_add=True)
 
 @receiver(post_save, sender=CustomUser)
@@ -33,19 +39,20 @@ class WalletTransaction(models.Model):
         ('transfer', 'TRANSFER'),
     )
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
-    
+   
     transaction_type = models.CharField(
         max_length=100,
         choices = TRANSACTION_CHOICES,
         default=''               
     )
     
-    amount = models.DecimalField(max_digits=13, decimal_places=2)
+    amount = models.DecimalField(max_digits=13, decimal_places=2, default=0.0)
 
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    description = models.TextField()
+    description = models.CharField(max_length=200, default='')
 
-#    source = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    source = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transfer')
 
- #   destination = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    destination = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='deposit')
+
